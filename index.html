@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>除外機能付き4人組ランダムグループ生成</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+        .group {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        #remaining {
+            color: #ff6600;
+            font-weight: bold;
+        }
+        #excluded {
+            color: #0066ff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>除外機能付き4人組ランダムグループ生成</h1>
+    <div class="input-group">
+        <label for="totalPeople">総人数：</label>
+        <input type="number" id="totalPeople" min="1" required>
+    </div>
+    <div class="input-group">
+        <label for="excludeNumbers">除外する番号（カンマ区切り）：</label>
+        <input type="text" id="excludeNumbers" placeholder="例: 1,5,10">
+    </div>
+    <button onclick="generateGroups()">グループ生成</button>
+    <div id="result"></div>
+
+    <script>
+        function generateGroups() {
+            const totalPeople = parseInt(document.getElementById('totalPeople').value);
+            const excludeInput = document.getElementById('excludeNumbers').value;
+            const excludeNumbers = excludeInput.split(',').map(num => parseInt(num.trim())).filter(num => !isNaN(num));
+
+            if (isNaN(totalPeople) || totalPeople < 1) {
+                alert('正の整数を入力してください。');
+                return;
+            }
+
+            let people = Array.from({length: totalPeople}, (_, i) => i + 1);
+            people = people.filter(num => !excludeNumbers.includes(num));
+
+            // Fisher-Yates シャッフルアルゴリズム
+            for (let i = people.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [people[i], people[j]] = [people[j], people[i]];
+            }
+
+            const groups = [];
+            while (people.length >= 4) {
+                groups.push(people.splice(0, 4));
+            }
+            const remaining = people;
+
+            let resultHTML = '<h2>作成されたグループ:</h2>';
+            groups.forEach((group, index) => {
+                resultHTML += `<div class="group">グループ${index + 1}: ${group.join(', ')}</div>`;
+            });
+            if (remaining.length > 0) {
+                resultHTML += `<div id="remaining">余った人: ${remaining.join(', ')}</div>`;
+            }
+            if (excludeNumbers.length > 0) {
+                resultHTML += `<div id="excluded">除外された番号: ${excludeNumbers.join(', ')}</div>`;
+            }
+
+            document.getElementById('result').innerHTML = resultHTML;
+        }
+    </script>
+</body>
+</html>
